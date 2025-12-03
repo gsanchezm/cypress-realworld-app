@@ -27,9 +27,11 @@ import resolvers from "./graphql/resolvers";
 import { frontendPort, getBackendPort } from "../src/utils/portUtils";
 
 require("dotenv").config();
+const FRONTEND_URL =
+  process.env.FRONTEND_URL || `http://localhost:${frontendPort}`;
 
 const corsOption = {
-  origin: `http://localhost:${frontendPort}`,
+  origin: FRONTEND_URL,
   credentials: true,
 };
 
@@ -116,6 +118,24 @@ app.use("/bankTransfers", bankTransferRoutes);
 
 app.use(express.static(join(__dirname, "../public")));
 
-getBackendPort().then((port) => {
-  app.listen(port);
-});
+const startServer = async () => {
+  try {
+    // “local” port calculated by util
+    const defaultPort = await getBackendPort();
+
+    // 👉 PRIORIDAD:
+    // 1) process.env.PORT  (Render / proveedor)
+    // 2) defaultPort      
+    const port = Number(process.env.PORT || defaultPort);
+
+    app.listen(port, () => {
+      console.log(`✅ Backend listening on port ${port}`);
+      console.log(`✅ CORS origin: ${FRONTEND_URL}`);
+    });
+  } catch (err) {
+    console.error("❌ Error starting server", err);
+    process.exit(1);
+  }
+};
+
+startServer();
