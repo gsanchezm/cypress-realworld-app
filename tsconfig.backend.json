@@ -1,5 +1,9 @@
 {
   "extends": "./tsconfig.tsnode.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist-backend"
+  },
   "include": [
     "backend/**/*",
     "src/utils/portUtils.ts"
