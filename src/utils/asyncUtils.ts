@@ -1,10 +1,12 @@
 import axios from "axios";
 
-const apiUrl = import.meta.env.VITE_API_URL || `http://localhost:${import.meta.env.VITE_BACKEND_PORT || 3001}`;
+const isProd = import.meta.env.PROD;
 
-console.log("API URL =>", apiUrl);
+const apiUrl = isProd ? "" : `http://localhost:${import.meta.env.VITE_BACKEND_PORT || 3001}`;
 
 const LOCAL_BACKEND_REGEX = /^https?:\/\/localhost:\d+/;
+
+console.log("API URL =>", apiUrl || "(same origin)");
 
 const httpClient = axios.create({
   baseURL: apiUrl,
@@ -13,26 +15,9 @@ const httpClient = axios.create({
 
 httpClient.interceptors.request.use((config) => {
   if (config.url && LOCAL_BACKEND_REGEX.test(config.url)) {
-    try {
-      const url = new URL(config.url);
-      config.url = url.pathname + url.search;
-      console.log("Rewriting localhost URL to relative:", config.url);
-    } catch {
-    }
-  }
-
-  /* istanbul ignore if */
-  if (
-    import.meta.env.VITE_AUTH0 ||
-    import.meta.env.VITE_OKTA ||
-    import.meta.env.VITE_AWS_COGNITO ||
-    import.meta.env.VITE_GOOGLE
-  ) {
-    const accessToken = localStorage.getItem(
-      import.meta.env.VITE_AUTH_TOKEN_NAME!
-    );
-    // @ts-ignore
-    config.headers["Authorization"] = `Bearer ${accessToken}`;
+    const url = new URL(config.url);
+    config.url = url.pathname + url.search;
+    console.log("Rewriting localhost URL to relative:", config.url);
   }
   return config;
 });
