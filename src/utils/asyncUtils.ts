@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const apiUrl = process.env.VITE_API_URL || `http://localhost:${process.env.VITE_BACKEND_PORT || 3001}`;
+const apiUrl = import.meta.env.VITE_API_URL || `http://localhost:${import.meta.env.VITE_BACKEND_PORT || 3001}`;
 
 const httpClient = axios.create({
   baseURL: apiUrl,
@@ -10,12 +10,14 @@ const httpClient = axios.create({
 httpClient.interceptors.request.use((config) => {
   /* istanbul ignore if */
   if (
-    process.env.VITE_AUTH0 ||
-    process.env.VITE_OKTA ||
-    process.env.VITE_AWS_COGNITO ||
-    process.env.VITE_GOOGLE
+    import.meta.env.VITE_AUTH0 ||
+    import.meta.env.VITE_OKTA ||
+    import.meta.env.VITE_AWS_COGNITO ||
+    import.meta.env.VITE_GOOGLE
   ) {
-    const accessToken = localStorage.getItem(process.env.VITE_AUTH_TOKEN_NAME!);
+    const accessToken = localStorage.getItem(
+      import.meta.env.VITE_AUTH_TOKEN_NAME!
+    );
     // @ts-ignore
     config.headers["Authorization"] = `Bearer ${accessToken}`;
   }
