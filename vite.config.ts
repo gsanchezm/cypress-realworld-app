@@ -5,6 +5,8 @@ import istanbul from "vite-plugin-istanbul";
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), "VITE");
+  const isDev = mode === "development";
+  
   return {
     // expose all vite "VITE_*" variables as process.env.VITE_* in the browser
     define: {
@@ -19,7 +21,7 @@ export default defineConfig(({ command, mode }) => {
     },
     plugins: [
       react(),
-      eslint(),
+      ...(isDev ? [eslint()] : []),
       istanbul({
         cypress: true,
         requireEnv: true,
