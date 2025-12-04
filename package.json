@@ -149,7 +149,7 @@
     "copy:mock:awsexports": "ncp scripts/mock-aws-exports.js src/aws-exports.js",
     "copy:mock:awsexportses5": "ncp scripts/mock-aws-exports-es5.js aws-exports-es5.js",
     "build:aws-exports-es5": "cross-env tsc --skipLibCheck --allowJs --lib 'es5' --module 'commonjs' --target 'es5' --moduleResolution 'node' --outDir . src/aws-exports.js; mv aws-exports.js aws-exports-es5.js",
-    "build:backend": "tsc -P tsconfig.backend.json && mkdir -p dist-backend/backend/graphql && cp backend/graphql/schema.graphql dist-backend/backend/graphql/schema.graphql && mkdir -p dist-backend/data && cp data/database.json dist-backend/data/database.json",
+    "build:backend": "yarn copy:mock:awsexports && tsc -P tsconfig.backend.json && mkdir -p dist-backend/backend/graphql && cp backend/graphql/schema.graphql dist-backend/backend/graphql/schema.graphql && mkdir -p dist-backend/data && cp data/database.json dist-backend/data/database.json",
     "start": "cross-env NODE_ENV=development concurrently yarn:start:react yarn:start:api",
     "start:ci": "cross-env NODE_ENV=test concurrently yarn:start:react:proxy-server yarn:start:api",
     "prestart:ci": "yarn predev:cognito:ci",
