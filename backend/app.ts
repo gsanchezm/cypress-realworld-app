@@ -56,6 +56,13 @@ app.use(cors(corsOption));
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+const app = express();
+
+// 👇 Necesario cuando estás detrás de proxy (Render, Heroku, etc.)
+// para que req.secure sea true y se envíen cookies "secure"
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 app.use(
   session({
@@ -64,7 +71,9 @@ app.use(
     saveUninitialized: false,
     unset: "destroy",
     cookie: {
-      secure: process.env.NODE_ENV === "production",           // requiere HTTPS
+      // En producción (Render) la cookie será "secure" y SameSite=None
+      // para que funcione entre cypress-rwa-frontend y cypress-rwa-api
+      secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     },
   })
