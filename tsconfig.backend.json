@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.tsnode.json",
+  "include": [
+    "backend/**/*",
+    "src/utils/portUtils.ts"
+  ],
+  "exclude": [
+    "cypress",
+    "src/**/__tests__/**"
+  ]
+}
