@@ -56,7 +56,6 @@ app.use(cors(corsOption));
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-const app = express();
 
 // 👇 Necesario cuando estás detrás de proxy (Render, Heroku, etc.)
 // para que req.secure sea true y se envíen cookies "secure"
