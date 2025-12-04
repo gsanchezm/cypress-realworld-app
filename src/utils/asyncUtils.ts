@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiUrl = import.meta.env.VITE_API_URL || `http://localhost:${import.meta.env.VITE_BACKEND_PORT || 3001}`;
-
+console.log("API URL =>", apiUrl); // 👈 deja esto temporalmente para debug
 const httpClient = axios.create({
   baseURL: apiUrl,
   withCredentials: true,
