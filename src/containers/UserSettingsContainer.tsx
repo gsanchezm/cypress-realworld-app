@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { styled } from "@mui/material/styles";
 import { Paper, Typography, Grid } from "@mui/material";
 import UserSettingsForm from "../components/UserSettingsForm";
@@ -6,6 +6,7 @@ import { Interpreter } from "xstate";
 import { AuthMachineContext, AuthMachineEvents } from "../machines/authMachine";
 import { useActor } from "@xstate/react";
 import PersonalSettingsIllustration from "../components/SvgUndrawPersonalSettingsKihd";
+import { User, UserSettingsPayload } from "../models";
 
 const PREFIX = "UserSettingsContainer";
 
@@ -30,7 +31,19 @@ const UserSettingsContainer: React.FC<Props> = ({ authService }) => {
   const [authState, sendAuth] = useActor(authService);
 
   const currentUser = authState?.context?.user;
-  const updateUser = (payload: any) => sendAuth({ type: "UPDATE", ...payload });
+
+  const [userProfile, setUserProfile] = useState<User | null>(currentUser ?? null);
+
+  useEffect(() => {
+    if (currentUser) {
+      setUserProfile(currentUser);
+    }
+  }, [currentUser]);
+
+  const updateUser = (payload: UserSettingsPayload & { id: string }) => {
+    sendAuth({ type: "UPDATE", ...payload });
+    setUserProfile((prev) => (prev ? { ...prev, ...payload } : prev));
+  };
 
   return (
     <StyledPaper className={classes.paper}>
@@ -48,10 +61,13 @@ const UserSettingsContainer: React.FC<Props> = ({ authService }) => {
           <PersonalSettingsIllustration style={{ height: 200, width: 300 }} />
         </Grid>
         <Grid item style={{ width: "50%" }}>
-          {currentUser && <UserSettingsForm userProfile={currentUser} updateUser={updateUser} />}
+          {userProfile && (
+            <UserSettingsForm userProfile={userProfile} updateUser={updateUser} />
+          )}
         </Grid>
       </Grid>
     </StyledPaper>
   );
 };
+
 export default UserSettingsContainer;

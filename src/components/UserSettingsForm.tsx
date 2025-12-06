@@ -22,7 +22,7 @@ const StyledFormik = styled(Formik)(({ theme }) => ({
 }));
 
 const MarginHonoringDiv = styled("div")(({ theme }) => ({
-  width: "100%", // Fix IE 11 issue.
+  width: "100%",
   marginTop: theme.spacing(1),
 }));
 
@@ -43,7 +43,7 @@ const validationSchema = object({
 
 export interface UserSettingsProps {
   userProfile: User;
-  updateUser: Function;
+  updateUser: (payload: UserSettingsPayload & { id: string }) => Promise<void> | void;
 }
 
 const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser }) => {
@@ -59,10 +59,14 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
     <StyledFormik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={(values, { setSubmitting }) => {
+      enableReinitialize  
+      onSubmit={async (values, { setSubmitting }) => {
         setSubmitting(true);
-        updateUser({ id: userProfile.id, ...values });
-        setSubmitting(false);
+        try {
+          await updateUser({ id: userProfile.id, ...values });
+        } finally {
+          setSubmitting(false);
+        }
       }}
     >
       {({ isValid, isSubmitting }) => (
@@ -75,7 +79,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
                   margin="dense"
                   fullWidth
                   required
-                  id={"user-settings-firstName-input"}
+                  id="user-settings-firstName-input"
                   type="text"
                   placeholder="First Name"
                   inputProps={{ "data-test": "user-settings-firstName-input" }}
@@ -92,7 +96,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
                   margin="dense"
                   fullWidth
                   required
-                  id={"user-settings-lastName-input"}
+                  id="user-settings-lastName-input"
                   type="text"
                   placeholder="Last Name"
                   inputProps={{ "data-test": "user-settings-lastName-input" }}
@@ -109,7 +113,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
                   margin="dense"
                   fullWidth
                   required
-                  id={"user-settings-email-input"}
+                  id="user-settings-email-input"
                   type="text"
                   placeholder="Email"
                   inputProps={{ "data-test": "user-settings-email-input" }}
@@ -126,7 +130,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
                   margin="dense"
                   fullWidth
                   required
-                  id={"user-settings-phoneNumber-input"}
+                  id="user-settings-phoneNumber-input"
                   type="text"
                   placeholder="Phone Number"
                   inputProps={{ "data-test": "user-settings-phoneNumber-input" }}
