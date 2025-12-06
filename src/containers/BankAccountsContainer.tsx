@@ -48,10 +48,23 @@ const BankAccountsContainer: React.FC<Props> = ({ authService }) => {
 
   const loadBankAccounts = async () => {
     try {
-      const { data } = await httpClient.get<BankAccount[]>("/bankAccounts");
-      setBankAccounts(data);
+      const { data } = await httpClient.get("/bankAccounts");
+      // data puede ser array o un objeto tipo { results: [...] } o { bankAccounts: [...] }
+
+      const list =
+        Array.isArray(data)
+          ? data
+          : Array.isArray((data as any).results)
+            ? (data as any).results
+            : Array.isArray((data as any).bankAccounts)
+              ? (data as any).bankAccounts
+              : [];
+
+      console.log("loadBankAccounts →", list);
+      setBankAccounts(list);
     } catch (err) {
       console.error("Error loading bank accounts", err);
+      setBankAccounts([]);
     } finally {
       setLoading(false);
     }
@@ -62,8 +75,13 @@ const BankAccountsContainer: React.FC<Props> = ({ authService }) => {
   }, []);
 
   const createBankAccount = async (payload: BankAccountPayload) => {
-    const { data } = await httpClient.post<BankAccount>("/bankAccounts", payload);
-    setBankAccounts((prev) => [ ...(prev || []), data ]);
+    const { data } = await httpClient.post("/bankAccounts", payload);
+    console.log("createBankAccount →", data);
+
+    setBankAccounts((prev) => {
+      const safePrev = Array.isArray(prev) ? prev : [];
+      return [...safePrev, data];
+    });
   };
 
   const deleteBankAccount = async ({ id }: { id: string }) => {
