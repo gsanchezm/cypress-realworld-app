@@ -41,9 +41,13 @@ const UserSettingsContainer: React.FC<Props> = ({ authService }) => {
   }, [currentUser]);
 
   const updateUser = (payload: UserSettingsPayload & { id: string }) => {
-    sendAuth({ type: "UPDATE", ...payload });
-    setUserProfile((prev) => (prev ? { ...prev, ...payload } : prev));
-  };
+  setUserProfile((prev) => (prev ? { ...prev, ...payload } : prev));
+
+  sendAuth({
+    type: "UPDATE",
+    user: payload,
+  } as any);
+};
 
   return (
     <StyledPaper className={classes.paper}>
