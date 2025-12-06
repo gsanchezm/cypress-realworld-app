@@ -19,10 +19,12 @@ import { httpClient } from "../utils/asyncUtils";
 
 export interface Props {
   authService: Interpreter<AuthMachineContext, AuthMachineSchema, AuthMachineEvents, any, any>;
+  // dejamos bankAccountsService opcional para compatibilidad si el router lo sigue pasando
   bankAccountsService?: any;
 }
 
 const PREFIX = "BankAccountsContainer";
+
 const classes = {
   paper: `${PREFIX}-paper`,
 };
@@ -61,7 +63,6 @@ const BankAccountsContainer: React.FC<Props> = ({ authService }) => {
 
   const createBankAccount = async (payload: BankAccountPayload) => {
     const { data } = await httpClient.post<BankAccount>("/bankAccounts", payload);
-    // agregar la nueva cuenta a la lista
     setBankAccounts((prev) => [...prev, data]);
   };
 
@@ -70,6 +71,7 @@ const BankAccountsContainer: React.FC<Props> = ({ authService }) => {
     setBankAccounts((prev) => prev.filter((acc) => acc.id !== id));
   };
 
+  // Vista de creación
   if (match.url === "/bankaccounts/new" && currentUser?.id) {
     return (
       <StyledPaper className={classes.paper}>
@@ -81,6 +83,7 @@ const BankAccountsContainer: React.FC<Props> = ({ authService }) => {
     );
   }
 
+  // Vista de lista
   return (
     <StyledPaper className={classes.paper}>
       <Grid container direction="row" justifyContent="space-between" alignItems="center">
