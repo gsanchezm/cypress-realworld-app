@@ -47,28 +47,29 @@ const BankAccountsContainer: React.FC<Props> = ({ authService }) => {
   const [loading, setLoading] = useState(true);
 
   const loadBankAccounts = async () => {
-    try {
-      const { data } = await httpClient.get("/bankAccounts");
-      // data puede ser array o un objeto tipo { results: [...] } o { bankAccounts: [...] }
+  try {
+    const { data } = await httpClient.get("/bankAccounts");
 
-      const list =
-        Array.isArray(data)
-          ? data
-          : Array.isArray((data as any).results)
-            ? (data as any).results
-            : Array.isArray((data as any).bankAccounts)
-              ? (data as any).bankAccounts
-              : [];
+    const raw =
+      Array.isArray(data)
+        ? data
+        : Array.isArray((data as any).results)
+        ? (data as any).results
+        : Array.isArray((data as any).bankAccounts)
+        ? (data as any).bankAccounts
+        : [];
 
-      console.log("loadBankAccounts →", list);
-      setBankAccounts(list);
-    } catch (err) {
-      console.error("Error loading bank accounts", err);
-      setBankAccounts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const visible = raw.filter((acc: any) => !acc.isDeleted);
+
+    console.log("loadBankAccounts →", visible);
+    setBankAccounts(visible);
+  } catch (err) {
+    console.error("Error loading bank accounts", err);
+    setBankAccounts([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     loadBankAccounts();
@@ -78,18 +79,22 @@ const BankAccountsContainer: React.FC<Props> = ({ authService }) => {
     const { data } = await httpClient.post("/bankAccounts", payload);
     console.log("createBankAccount →", data);
 
+    const newAccount = (data as any).account ?? data;
+
     setBankAccounts((prev) => {
       const safePrev = Array.isArray(prev) ? prev : [];
-      return [...safePrev, data];
+      return [...safePrev, newAccount];
     });
   };
 
   const deleteBankAccount = async ({ id }: { id: string }) => {
-    await httpClient.delete(`/bankAccounts/${id}`);
-    setBankAccounts((prev) => prev.filter((acc) => acc.id !== id));
-  };
+  await httpClient.delete(`/bankAccounts/${id}`);
+  setBankAccounts((prev) =>
+    (Array.isArray(prev) ? prev : []).filter((acc) => acc.id !== id)
+  );
+};
 
-  // Vista de creación
+
   if (match.url === "/bankaccounts/new" && currentUser?.id) {
     return (
       <StyledPaper className={classes.paper}>
@@ -101,7 +106,6 @@ const BankAccountsContainer: React.FC<Props> = ({ authService }) => {
     );
   }
 
-  // Vista de lista
   return (
     <StyledPaper className={classes.paper}>
       <Grid container direction="row" justifyContent="space-between" alignItems="center">
