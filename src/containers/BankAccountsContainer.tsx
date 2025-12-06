@@ -1,34 +1,23 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { styled } from "@mui/material/styles";
 import { useActor } from "@xstate/react";
-import {
-  BaseActionObject,
-  Interpreter,
-  ResolveTypegenMeta,
-  ServiceMap,
-  TypegenDisabled,
-} from "xstate";
 import { Link as RouterLink, useRouteMatch } from "react-router-dom";
 import { Grid, Button, Paper, Typography } from "@mui/material";
 
-import { AuthMachineContext, AuthMachineEvents, AuthMachineSchema } from "../machines/authMachine";
-import { DataContext, DataEvents, DataSchema } from "../machines/dataMachine";
-import BankAccountForm from "../components/BankAccountForm";
-import BankAccountList from "../components/BankAccountList";
-import { httpClient } from "../utils/asyncUtils";
+import { AuthMachineContext, AuthMachineEvents, AuthMachineSchema } from "./machines/authMachine";
+import { Interpreter } from "xstate";
+import BankAccountForm from "./components/BankAccountForm";
+import BankAccountList from "./components/BankAccountList";
+import { httpClient } from "./utils/asyncUtils";
+import { BankAccount, BankAccountPayload } from "./models";
 
 export interface Props {
   authService: Interpreter<AuthMachineContext, AuthMachineSchema, AuthMachineEvents, any, any>;
-  bankAccountsService: Interpreter<
-    DataContext,
-    DataSchema,
-    DataEvents,
-    any,
-    ResolveTypegenMeta<TypegenDisabled, DataEvents, BaseActionObject, ServiceMap>
-  >;
+  // bankAccountsService sigue existiendo por firma pero no lo usamos ya
+  bankAccountsService?: any;
 }
-const PREFIX = "BankAccountsContainer";
 
+const PREFIX = "BankAccountsContainer";
 const classes = {
   paper: `${PREFIX}-paper`,
 };
@@ -42,27 +31,39 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   },
 }));
 
-const BankAccountsContainer: React.FC<Props> = ({ authService, bankAccountsService }) => {
+const BankAccountsContainer: React.FC<Props> = ({ authService }) => {
   const match = useRouteMatch();
-
   const [authState] = useActor(authService);
-  const [bankAccountsState, sendBankAccounts] = useActor(bankAccountsService);
-
   const currentUser = authState?.context.user;
 
-  const createBankAccount = async (payload: any) => {
-  await httpClient.post("/bankAccounts", payload);
-  sendBankAccounts("FETCH");
-};
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const deleteBankAccount = async (payload: any) => {
-  await httpClient.delete(`/bankAccounts/${payload.id}`);
-  sendBankAccounts("FETCH");
-};
+  const loadBankAccounts = async () => {
+    try {
+      const { data } = await httpClient.get<BankAccount[]>("/bankAccounts");
+      setBankAccounts(data);
+    } catch (err) {
+      console.error("Error loading bank accounts", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    sendBankAccounts("FETCH");
-  }, [sendBankAccounts]);
+    loadBankAccounts();
+  }, []);
+
+  const createBankAccount = async (payload: BankAccountPayload) => {
+    const { data } = await httpClient.post<BankAccount>("/bankAccounts", payload);
+    // agregar la nueva cuenta a la lista
+    setBankAccounts((prev) => [...prev, data]);
+  };
+
+  const deleteBankAccount = async ({ id }: { id: string }) => {
+    await httpClient.delete(`/bankAccounts/${id}`);
+    setBankAccounts((prev) => prev.filter((acc) => acc.id !== id));
+  };
 
   if (match.url === "/bankaccounts/new" && currentUser?.id) {
     return (
@@ -70,7 +71,7 @@ const BankAccountsContainer: React.FC<Props> = ({ authService, bankAccountsServi
         <Typography component="h2" variant="h6" color="primary" gutterBottom>
           Create Bank Account
         </Typography>
-        <BankAccountForm userId={currentUser?.id} createBankAccount={createBankAccount} />
+        <BankAccountForm userId={currentUser.id} createBankAccount={createBankAccount} />
       </StyledPaper>
     );
   }
@@ -96,11 +97,14 @@ const BankAccountsContainer: React.FC<Props> = ({ authService, bankAccountsServi
           </Button>
         </Grid>
       </Grid>
-      <BankAccountList
-        bankAccounts={bankAccountsState?.context.results!}
-        deleteBankAccount={deleteBankAccount}
-      />
+
+      {loading ? (
+        <div>Loading bank accounts...</div>
+      ) : (
+        <BankAccountList bankAccounts={bankAccounts} deleteBankAccount={deleteBankAccount} />
+      )}
     </StyledPaper>
   );
 };
+
 export default BankAccountsContainer;
