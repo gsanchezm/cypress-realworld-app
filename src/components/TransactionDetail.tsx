@@ -61,7 +61,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   },
 
   [`& .${classes.redButton}`]: {
-    backgrounColor: "red",
+    backgroundColor: "red",
     color: "#ffffff",
     backgroundColor: "red",
     paddingTop: 5,

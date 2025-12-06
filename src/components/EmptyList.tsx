@@ -11,7 +11,7 @@ const EmptyList: React.FC<{ entity: string; children?: React.ReactNode }> = ({
     <Box
       display="flex"
       height={600}
-      min-height={600}
+      minHeight={600}
       alignItems="center"
       justifyContent="center"
       border={1}

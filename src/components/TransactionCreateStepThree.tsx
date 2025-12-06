@@ -62,7 +62,7 @@ const TransactionCreateStepThree: React.FC<TransactionCreateStepThreeProps> = ({
         display="flex"
         justifyContent="center"
         width="95%"
-        min-height={200}
+        minHeight={200}
         height={200}
         style={{ paddingTop: "5%" }}
       >

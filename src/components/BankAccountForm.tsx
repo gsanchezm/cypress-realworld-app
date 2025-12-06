@@ -5,7 +5,6 @@ import { Formik, Form, Field, FieldProps } from "formik";
 import { string, object } from "yup";
 import { BankAccountPayload, User } from "../models";
 import { useHistory } from "react-router";
-import { httpClient } from "../utils/asyncUtils";
 
 const validationSchema = object({
   bankName: string().min(5, "Must contain at least 5 characters").required("Enter a bank name"),
@@ -68,20 +67,18 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({
     <StyledFormik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={async (values, { setSubmitting }) => {
+      // BankAccountForm.tsx
+      onSubmit={async (values, { setSubmitting, resetForm }) => {
         setSubmitting(true);
 
         try {
-          // 👇 llamada directa a la API usando el httpClient ya configurado
-          await httpClient.post("/bankAccounts", { ...values, userId });
-
-          // si todo salió bien, navega de vuelta a la lista
+          await createBankAccount({ ...values, userId });
+          resetForm();
           if (!onboarding) {
             history.push("/bankaccounts");
           }
         } catch (err) {
           console.error("Error creating bank account", err);
-          // aquí podrías mostrar un snackbar/toast si quieres
         } finally {
           setSubmitting(false);
         }

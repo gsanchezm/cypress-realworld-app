@@ -5,7 +5,7 @@ import { Formik, Form, Field, FieldProps } from "formik";
 import { string, object } from "yup";
 
 const validationSchema = object({
-  content: string(),
+  content: string().trim().required("Comment is required"),
 });
 
 const PREFIX = "CommentForm";
@@ -42,9 +42,14 @@ const CommentForm: React.FC<CommentFormProps> = ({ transactionId, transactionCom
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
-        onSubmit={(values, { setSubmitting }) => {
+        onSubmit={async (values, { setSubmitting, resetForm }) => {
           setSubmitting(true);
-          transactionComment({ transactionId, ...values });
+          try {
+            await transactionComment({ transactionId, ...values });
+            resetForm();
+          } finally {
+            setSubmitting(false);
+          }
         }}
       >
         {() => (

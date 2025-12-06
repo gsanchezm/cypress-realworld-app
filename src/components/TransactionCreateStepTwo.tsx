@@ -113,18 +113,19 @@ const TransactionCreateStepTwo: React.FC<TransactionCreateStepTwoProps> = ({
           initialValues={initialValues}
           validationSchema={validationSchema}
           validateOnMount={true}
-          onSubmit={(values, { setSubmitting }) => {
+          onSubmit={async (values, { setSubmitting }) => {
             setSubmitting(true);
-
-            // reset transactionType
-            setTransactionType(undefined);
-
-            createTransaction({ transactionType, ...values });
-            showSnackbar({
-              severity: "success",
-              message: "Transaction Submitted!",
-            });
+            try {
+              // reset antes o después, como prefieras
+              const payload = { transactionType, ...values };
+              await createTransaction(payload);
+              showSnackbar({ severity: "success", message: "Transaction Submitted!" });
+              setTransactionType(undefined);
+            } finally {
+              setSubmitting(false);
+            }
           }}
+
         >
           {({ isValid, isSubmitting }) => (
             <Form className={classes.form} data-test="transaction-create-form">

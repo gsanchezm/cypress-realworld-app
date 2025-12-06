@@ -15,6 +15,7 @@ import { AuthMachineContext, AuthMachineEvents, AuthMachineSchema } from "../mac
 import { DataContext, DataEvents, DataSchema } from "../machines/dataMachine";
 import BankAccountForm from "../components/BankAccountForm";
 import BankAccountList from "../components/BankAccountList";
+import { httpClient } from "../utils/asyncUtils";
 
 export interface Props {
   authService: Interpreter<AuthMachineContext, AuthMachineSchema, AuthMachineEvents, any, any>;
@@ -49,13 +50,15 @@ const BankAccountsContainer: React.FC<Props> = ({ authService, bankAccountsServi
 
   const currentUser = authState?.context.user;
 
-  const createBankAccount = (payload: any) => {
-    sendBankAccounts({ type: "CREATE", ...payload });
-  };
+  const createBankAccount = async (payload: any) => {
+  await httpClient.post("/bankAccounts", payload);
+  sendBankAccounts("FETCH");
+};
 
-  const deleteBankAccount = (payload: any) => {
-    sendBankAccounts({ type: "DELETE", ...payload });
-  };
+  const deleteBankAccount = async (payload: any) => {
+  await httpClient.delete(`/bankAccounts/${payload.id}`);
+  sendBankAccounts("FETCH");
+};
 
   useEffect(() => {
     sendBankAccounts("FETCH");
