@@ -63,7 +63,7 @@ const BankAccountsContainer: React.FC<Props> = ({ authService }) => {
 
   const createBankAccount = async (payload: BankAccountPayload) => {
     const { data } = await httpClient.post<BankAccount>("/bankAccounts", payload);
-    setBankAccounts((prev) => [...prev, data]);
+    setBankAccounts((prev) => [ ...(prev || []), data ]);
   };
 
   const deleteBankAccount = async ({ id }: { id: string }) => {
