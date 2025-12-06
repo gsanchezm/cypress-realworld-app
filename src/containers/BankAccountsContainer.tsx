@@ -1,19 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { styled } from "@mui/material/styles";
 import { useActor } from "@xstate/react";
+import {
+  BaseActionObject,
+  Interpreter,
+  ResolveTypegenMeta,
+  ServiceMap,
+  TypegenDisabled,
+} from "xstate";
 import { Link as RouterLink, useRouteMatch } from "react-router-dom";
 import { Grid, Button, Paper, Typography } from "@mui/material";
 
-import { AuthMachineContext, AuthMachineEvents, AuthMachineSchema } from "./machines/authMachine";
-import { Interpreter } from "xstate";
-import BankAccountForm from "./components/BankAccountForm";
-import BankAccountList from "./components/BankAccountList";
-import { httpClient } from "./utils/asyncUtils";
-import { BankAccount, BankAccountPayload } from "./models";
+import { AuthMachineContext, AuthMachineEvents, AuthMachineSchema } from "../machines/authMachine";
+import { DataContext, DataEvents, DataSchema } from "../machines/dataMachine";
+import BankAccountForm from "../components/BankAccountForm";
+import BankAccountList from "../components/BankAccountList";
+import { httpClient } from "../utils/asyncUtils";
 
 export interface Props {
   authService: Interpreter<AuthMachineContext, AuthMachineSchema, AuthMachineEvents, any, any>;
-  // bankAccountsService sigue existiendo por firma pero no lo usamos ya
   bankAccountsService?: any;
 }
 
