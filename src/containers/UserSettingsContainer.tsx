@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { styled } from "@mui/material/styles";
 import { Paper, Typography, Grid } from "@mui/material";
-import UserSettingsForm from "../components/UserSettingsForm";
-import { Interpreter } from "xstate";
-import { AuthMachineContext, AuthMachineEvents } from "../machines/authMachine";
 import { useActor } from "@xstate/react";
+import { Interpreter } from "xstate";
+
 import PersonalSettingsIllustration from "../components/SvgUndrawPersonalSettingsKihd";
+import UserSettingsForm from "../components/UserSettingsForm";
+
+import {
+  AuthMachineContext,
+  AuthMachineEvents,
+} from "../machines/authMachine";
 import { User, UserSettingsPayload } from "../models";
+import { httpClient } from "../utils/asyncUtils";
 
 const PREFIX = "UserSettingsContainer";
 
@@ -30,9 +36,10 @@ export interface Props {
 const UserSettingsContainer: React.FC<Props> = ({ authService }) => {
   const [authState, sendAuth] = useActor(authService);
 
-  const currentUser = authState?.context?.user;
+  const currentUser = authState?.context?.user ?? null;
 
-  const [userProfile, setUserProfile] = useState<User | null>(currentUser ?? null);
+  const [userProfile, setUserProfile] = useState<User | null>(currentUser);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -40,20 +47,40 @@ const UserSettingsContainer: React.FC<Props> = ({ authService }) => {
     }
   }, [currentUser]);
 
-  const updateUser = (payload: UserSettingsPayload & { id: string }) => {
-  setUserProfile((prev) => (prev ? { ...prev, ...payload } : prev));
+  const updateUser = async (values: UserSettingsPayload & { id: string }) => {
+    if (!userProfile) return;
 
-  sendAuth({
-    type: "UPDATE",
-    user: payload,
-  } as any);
-};
+    const fullUser: User = {
+      ...userProfile,
+      ...values,      
+    };
+
+    try {
+      setSaving(true);
+
+      const { data } = await httpClient.patch(`/users/${fullUser.id}`, fullUser);
+
+      const updatedUser: User = (data as any).user ?? data ?? fullUser;
+
+      setUserProfile(updatedUser);
+
+      sendAuth({
+        type: "USER_UPDATED",
+        user: updatedUser,
+      } as any);
+    } catch (error) {
+      console.error("Error updating user profile", error);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <StyledPaper className={classes.paper}>
       <Typography component="h2" variant="h6" color="primary" gutterBottom>
         User Settings
       </Typography>
+
       <Grid
         container
         spacing={2}
@@ -64,9 +91,14 @@ const UserSettingsContainer: React.FC<Props> = ({ authService }) => {
         <Grid item>
           <PersonalSettingsIllustration style={{ height: 200, width: 300 }} />
         </Grid>
+
         <Grid item style={{ width: "50%" }}>
           {userProfile && (
-            <UserSettingsForm userProfile={userProfile} updateUser={updateUser} />
+            <UserSettingsForm
+              userProfile={userProfile}
+              updateUser={updateUser}
+              saving={saving}
+            />
           )}
         </Grid>
       </Grid>

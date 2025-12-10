@@ -44,9 +44,14 @@ const validationSchema = object({
 export interface UserSettingsProps {
   userProfile: User;
   updateUser: (payload: UserSettingsPayload & { id: string }) => Promise<void> | void;
+  saving: boolean;
 }
 
-const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser }) => {
+const UserSettingsForm: React.FC<UserSettingsProps> = ({
+  userProfile,
+  updateUser,
+  saving,
+}) => {
   const initialValues: UserSettingsPayload = {
     firstName: userProfile.firstName,
     lastName: userProfile.lastName,
@@ -59,7 +64,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
     <StyledFormik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      enableReinitialize  
+      enableReinitialize // 👈 importante para reflejar cambios en userProfile
       onSubmit={async (values, { setSubmitting }) => {
         setSubmitting(true);
         try {
@@ -89,6 +94,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
                 />
               )}
             </Field>
+
             <Field name="lastName">
               {({ field, meta: { error, value, initialValue, touched } }: FieldProps) => (
                 <TextField
@@ -106,6 +112,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
                 />
               )}
             </Field>
+
             <Field name="email">
               {({ field, meta: { error, value, initialValue, touched } }: FieldProps) => (
                 <TextField
@@ -123,6 +130,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
                 />
               )}
             </Field>
+
             <Field name="phoneNumber">
               {({ field, meta: { error, value, initialValue, touched } }: FieldProps) => (
                 <TextField
@@ -140,6 +148,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
                 />
               )}
             </Field>
+
             <Grid
               container
               spacing={2}
@@ -155,7 +164,7 @@ const UserSettingsForm: React.FC<UserSettingsProps> = ({ userProfile, updateUser
                   color="primary"
                   sx={{ marginTop: 3, marginLeft: 0, marginBottom: 2 }}
                   data-test="user-settings-submit"
-                  disabled={!isValid || isSubmitting}
+                  disabled={!isValid || isSubmitting || saving}
                 >
                   Save
                 </Button>
